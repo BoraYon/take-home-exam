@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+   <head>
+      <meta charset="utf-8">
+      <title>Food Groupss</title>
+   </head>
+   <body>
+      {% extends "template.html" %}
+      {% block content %}
+      <div class="container">
+          <div class="row">
+              <div class="col md-12">
+                  <div class="jumbotron p-3">
+                  <h2> <b>Food Groups </b> </h2>
+                     <table class="table table-hover table-striped">
+                       <tr>
+                           <th>ID</th>
+                           <th>Name</th>
+                       </tr>
+                      {% for id, name in all_food_group %}
+                       <tr>
+                           <td>{{ id }}</td>
+                           <td>{{ name }}</td>
+                           <td>
+                               <a href="/show/{{ id }}" class="btn btn-warning btn-xs">Show</a>
+                           </td>
+                        </tr>
+                         {% endfor %}
+                     </table>
+                  </div>
+              </div>
+          </div>
+      </div>
+      {% endblock %}
+   </body>
+</html>
