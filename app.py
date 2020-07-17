@@ -1,6 +1,6 @@
 import sqlite3
 from sqlite3 import Error
-from flask import Flask, render_template, session, g, redirect
+from flask import Flask, render_template, request, session, g, redirect, url_for, flash
 
 app = Flask(__name__)
 
@@ -135,19 +135,56 @@ def home():
     return render_template("home.html", all_food_group=food_group)
 
 
-#show foods
+# show one groups foods
 @app.route('/show/<id>/', methods=['GET'])
 def show(id):
     c = get_db().cursor()
     group_foods = c.execute('SELECT f.short_desc, f.nitrogen_factor, f.protein_factor, f.fat_factor, f.calorie_factor FROM food AS f '
-                           'INNER JOIN food_group AS fg ON f.food_group_id = fg.id  WHERE fg.id =?',[id])
+                           'INNER JOIN food_group AS fg ON f.food_group_id = fg.id  WHERE fg.id = ?',[id])
 
     return render_template("show.html", foods=group_foods)
 
 
-@app.route("/about")
-def about():
-    return render_template("about.html")
+# show all foods and pagination
+@app.route('/about/', defaults={'page': 0})
+@app.route('/about/<int:page>/', methods=['GET', 'POST'])
+def about(page):
+    every_page = 10
+    prev_page = (page-1) if (page > 0) else page
+    next_page = page + 1
+    c = get_db().cursor()
+    current_page = page
+    page = page*every_page
+    food_items = c.execute('SELECT f.id,f.short_desc, f.long_desc,f.manufac_name, f.sci_name,fg.name AS fgname FROM food f '
+                           'INNER JOIN food_group fg ON '
+                           'f.food_group_id = fg.id LIMIT ?, ?', (page, every_page)).fetchall()
+    food_goups_items = c.execute('SELECT * FROM food_group')
+
+    return render_template("about.html", all_food=food_items, food_groups=food_goups_items, prev_page=prev_page,
+                           next_page=next_page, current_page=current_page)
+
+
+# update food
+@app.route('/update', methods=['GET', 'POST'])
+def update():
+    if request.method == 'POST':
+
+        f_id = request.form['id']
+        short_desc = request.form['short_desc']
+        long_desc = request.form['long_desc']
+        manufac_name = request.form['manufac_name']
+        sci_name = request.form['sci_name']
+        group_name = request.form['name']
+        current_page = request.form['current_page']
+
+        c = get_db().cursor()
+        group_id = c.execute('SELECT f.id FROM food_group AS f WHERE f.name=?', [group_name]).fetchone()[0]
+        update_sql =''' UPDATE food SET food_group_id = ?, short_desc = ?, long_desc = ?, manufac_name = ?, sci_name = ?
+              WHERE id = ?'''
+        c.execute(update_sql, (group_id, short_desc, long_desc, manufac_name, sci_name, f_id))
+        get_db().commit()
+        flash("Food Updated Successfully")
+        return redirect(url_for('about', page=current_page))
 
 
 if __name__ == "__main__":

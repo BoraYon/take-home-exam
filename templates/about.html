@@ -1,16 +1,110 @@
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
    <head>
       <meta charset="utf-8">
-      <title>About Flask</title>
+      <title>Foods</title>
    </head>
    <body>
       {% extends "template.html" %}
       {% block content %}
-      <h1> About Page </h1>
-      <p> Put Something About Your App Here: </p>
-      <p> And Here.... </p>
+      <div class="container">
+          <div class="row">
+              <div class="col md-12">
+                  <div class="jumbotron p-3">
+                  <h2> <b>Foods </b>
+                  <h2>
+                         <button type="button"  class="btn btn-success float-left" onclick="window.location.href='{{ url_for('about', page=prev_page) }}'">Previous</button>
+                         <button type="button"  class="btn btn-success float-right" onclick="window.location.href='{{ url_for('about', page=next_page) }}'">Next</button>
+                      </h2>
+                  </h2>
+                     {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                           {% for message in messages %}
+                            <div class="alert alert-success alert-dismissable" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="close">
+                                    <span aria-hidden="true">x</span>
+                                </button>
+                            {{message}}
+                            </div>
+                           {% endfor %}
+
+                      {% endif %}
+                     {% endwith %}
+                     <table class="table table-hover table-striped">
+                       <tr>
+                           <th>ID</th>
+                           <th>Short Description</th>
+                           <th>Long Description</th>
+                           <th>Manifacture</th>
+                           <th>Scientific Name</th>
+                           <th>Food Group</th>
+                       </tr>
+                      {% for id,short_desc,long_desc,manufac_name,sci_name, fgname in all_food %}
+                       <tr>
+                           <td>{{ id }}</td>
+                           <td>{{ short_desc }}</td>
+                           <td>{{ long_desc }}</td>
+                           <td>{{ manufac_name }}</td>
+                           <td>{{ sci_name }}</td>
+                           <td>{{ fgname }}</td>
+                           <td>
+                               <a href="/update/{{id}}" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#modaledit{{id}}">Edit</a>
+                           </td>
+                        </tr>
+                         <!-- Modal Edit Employee-->
+                          <div id="modaledit{{id}}" class="modal fade" role="dialog">
+                             <div class="modal-dialog">
+                             <div class="modal-content">
+                            <div class="modal-header"><h5 class="modal-title">Update Food</h5></div>
+                             <div class="modal-body">
+                             <form action="{{url_for('update')}}" method="POST">
+                              <div class="form-group">
+                               <label>Short Description:</label>
+                                    <input type="hidden"  name="id" value="{{id}}">
+                                    <input type="hidden"  name="current_page" value="{{current_page}}">
+                               <input type="text" class="form-control" name="short_desc" value="{{short_desc}}">
+                              </div>
+                              <div class="form-group">
+                               <label>Long Description:</label>
+                               <input type="text" class="form-control" name="long_desc" value="{{long_desc}}">
+                              </div>
+                              <div class="form-group">
+                               <label>Manufacture:</label>
+                               <input type="text" class="form-control" name="manufac_name" value="{{manufac_name}}">
+                              </div>
+                                <div class="form-group">
+                               <label>Scientific Name:</label>
+                               <input type="text" class="form-control" name="sci_name" value="{{sci_name}}">
+                              </div>
+                                 <div class="form-group">
+                                     <label>Group Name:</label>
+                                     <select name="name" id="name" class="form-control">
+                                        {% for id,name in food_groups %}
+                                           {% if fgname == name %}
+                                                <option class="form-control" value="{{ name }}" SELECTED>{{ name }}</option>
+                                            {% else %}
+                                                 <option class="form-control" value="{{ name }}" >{{ name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                      </select>
+                                </div>
+                              <div class="form-group">
+                                 <button class="btn float-right btn-primary" type="submit">Update</button>
+                                 <button class="btn float-left btn-danger" data-dismiss="modal">Cancel</button>
+                              </div>
+                             </form>
+                             </div>
+
+                           </div>
+                           </div>
+                          </div>
+
+                         {% endfor %}
+                     </table>
+                  </div>
+              </div>
+          </div>
+      </div>
       {% endblock %}
    </body>
 </html>
