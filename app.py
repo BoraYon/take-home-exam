@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 from flask import Flask, render_template, request, session, g, redirect, url_for, flash
+import json
 
 app = Flask(__name__)
 
@@ -109,7 +110,7 @@ def main():
         sql_insert = ''' INSERT OR IGNORE INTO food_group(id,name) VALUES (?, ?) '''
         with open('FD_GROUP.txt', 'r') as fr:
             for line in fr.readlines():
-                line = line.replace('\n', '').replace(' ', '').split('^')
+                line = line.replace('\n', '').split('^')
                 t, f = line
                 conn.execute(sql_insert, (int(t), f))
         conn.commit()
@@ -121,7 +122,7 @@ def main():
                                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,? ) '''
         with open('FOOD_DES.txt', 'r') as fr:
             for line in fr.readlines():
-                line = line.replace('\n', '').replace(' ', '').split('^')
+                line = line.replace('\n', '').split('^')
                 a, b, c, d, e, f, g, h, i, j, k, lt, m, n = line
                 a = int(a) if isint(a) else int(0)
                 i = int(i) if isint(i) else int(0)
@@ -140,7 +141,7 @@ def main():
             VALUES (?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?) '''
         with open('NUT_DATA.txt', 'r') as fr:
             for line in fr.readlines():
-                line = line.replace('\n', '').replace(' ', '').split('^')
+                line = line.replace('\n', '').split('^')
                 a, b, c, d, e, f, g, h, i, j, k, lt, m, n, o, p, r, s = line
                 a = int(a) if isint(a) else int(0)
                 b = int(b) if isint(b) else int(0)
@@ -163,7 +164,7 @@ def main():
                                                   VALUES (?,?,?,?,?,?,? ) '''
         with open('WEIGHT.txt', 'r') as fr:
             for line in fr.readlines():
-                line = line.replace('\n', '').replace(' ', '').split('^')
+                line = line.replace('\n', '').split('^')
                 a, b, c, d, e, f, g = line
                 a = int(a) if isint(a) else int(0)
                 b = int(b) if isint(b) else int(0)
@@ -181,7 +182,7 @@ def main():
                                             num_decimal_places,sr_order) VALUES (?, ?, ?, ?, ?, ?) '''
         with open('NUTR_DEF.txt', 'r') as fr:
             for line in fr.readlines():
-                line = line.replace('\n', '').replace(' ', '').split('^')
+                line = line.replace('\n', '').split('^')
                 a, b, c, d, e, f= line
                 a = int(a) if isint(a) else int(0)
                 g = int(g) if isint(g) else int()

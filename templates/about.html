@@ -30,7 +30,7 @@
 
                       {% endif %}
                      {% endwith %}
-                     <table class="table table-hover table-striped">
+                     <table class="table table-hover table-striped table-bordered">
                        <tr>
                            <th>Nutrients</th>
                            <th>Weights</th>
@@ -50,7 +50,9 @@
                                <a onclick="window.location.href='{{ url_for('showfoodweights', id=id, current_page=current_page) }}'" class="btn btn-primary btn-xs" >Weight Info</a>
                            </td>
                            <td>{{ id }}</td>
-                           <td>{{ short_desc }}</td>
+                           <td>
+                                {{short_desc}}
+                           </td>
                            <td>{{ long_desc }}</td>
                            <td>{{ manufac_name }}</td>
                            <td>{{ sci_name }}</td>
@@ -58,6 +60,7 @@
                            <td>
                                <a href="/update/{{id}}" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#modaledit{{id}}">Edit</a>
                            </td>
+
                         </tr>
                          <!-- Modal Edit Employee-->
                           <div id="modaledit{{id}}" class="modal fade" role="dialog">
