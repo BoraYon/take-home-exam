@@ -53,6 +53,50 @@ def main():
 
     sql_create_food_group_index_2 = """CREATE INDEX food_long_desc_search_index ON food(long_desc);"""
 
+    sql_create_nutrition = """CREATE TABLE IF NOT EXISTS nutrition (
+                                 food_id int REFERENCES food(id) NOT NULL,
+                                 nutrient_id int REFERENCES nutrient(id) NOT NULL,
+                                 amount float NOT NULL,
+                                 num_data_points int NOT NULL,
+                                 std_error float,
+                                 source_code text NOT NULL DEFAULT '',
+                                 derivation_code text,
+                                 reference_food_id REFERENCES food(id),
+                                 added_nutrient text,
+                                 num_studients int,
+                                 min float,
+                                 max float,
+                                 degrees_freedom int,
+                                 lower_error_bound float,
+                                 upper_error_bound float,
+                                 comments text,
+                                 modification_date text,
+                                 confidence_code text,
+                                 PRIMARY KEY(food_id, nutrient_id)
+       );"""
+
+    sql_create_weights = """ CREATE TABLE IF NOT EXISTS weight (
+        food_id int REFERENCES food(id) NOT NULL,
+        sequence_num int NOT NULL,
+        amount float NOT NULL,
+        description text NOT NULL DEFAULT '',
+        gm_weight float NOT NULL,
+        num_data_pts int,
+        std_dev float,
+        PRIMARY KEY(food_id, sequence_num)
+    );"""
+
+    sql_create_nutrient = """CREATE TABLE nutrient (
+              id int PRIMARY KEY NOT NULL,
+              units text NOT NULL DEFAULT '',
+              tagname text NOT NULL DEFAULT '',
+              name text NOT NULL DEFAULT '',
+              num_decimal_places text NOT NULL,
+              sr_order int NOT NULL
+    );"""
+
+    sql_create_nutrient_index = """CREATE INDEX nutrient_name_search_index ON nutrient(name);"""
+
     # create a database connection
     conn = create_connection('usda.db')
 
@@ -86,6 +130,62 @@ def main():
                 m = float(m) if isfloat(m) else float(0)
                 n = float(n) if isfloat(n) else float(0)
                 conn.execute(sql_insert, (int(a), int(b), c, d, e, f, g, h, int(i), j, k, lt, m, n))
+        conn.commit()
+
+        create_table(conn, sql_create_nutrition)
+        sql_insert = ''' INSERT OR IGNORE INTO 
+            nutrition(food_id,nutrient_id,amount,num_data_points,std_error,
+            source_code,derivation_code,reference_food_id,added_nutrient,num_studients,min,max,
+            degrees_freedom,lower_error_bound,upper_error_bound,comments,modification_date,confidence_code) 
+            VALUES (?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?) '''
+        with open('NUT_DATA.txt', 'r') as fr:
+            for line in fr.readlines():
+                line = line.replace('\n', '').replace(' ', '').split('^')
+                a, b, c, d, e, f, g, h, i, j, k, lt, m, n, o, p, r, s = line
+                a = int(a) if isint(a) else int(0)
+                b = int(b) if isint(b) else int(0)
+                c = float(c) if isfloat(c) else float(0)
+                d = int(d) if isint(d) else int(0)
+                h = int(h) if isint(h) else int(0)
+                j = int(j) if isint(j) else int()
+                k = float(k) if isfloat(k) else float()
+                lt = float(lt) if isfloat(lt) else float()
+                m = int(m) if isint(m) else int()
+                n = float(n) if isfloat(n) else float()
+                o = float(o) if isfloat(o) else float()
+                conn.execute(sql_insert, (
+                    int(a), int(b), float(c), int(d), e, f, g, int(h), i, j, k,
+                    float(lt), int(m), float(n), float(o), p, r, s))
+        conn.commit()
+
+        create_table(conn, sql_create_weights)
+        sql_insert = ''' INSERT OR IGNORE INTO weight(food_id, sequence_num, amount, description, gm_weight, num_data_pts, std_dev) 
+                                                  VALUES (?,?,?,?,?,?,? ) '''
+        with open('WEIGHT.txt', 'r') as fr:
+            for line in fr.readlines():
+                line = line.replace('\n', '').replace(' ', '').split('^')
+                a, b, c, d, e, f, g = line
+                a = int(a) if isint(a) else int(0)
+                b = int(b) if isint(b) else int(0)
+                c = float(c) if isfloat(c) else float()
+                e = float(e) if isfloat(e) else float()
+                f = int(f) if isint(f) else int()
+                g = float(g) if isfloat(g) else float()
+                conn.execute(sql_insert, (int(a), int(b), c, d, float(e), int(f), float(g)))
+        conn.commit()
+
+        create_table(conn, sql_create_nutrient)
+        create_table(conn, sql_create_nutrient_index)
+        # adding data into nutrient
+        sql_insert = ''' INSERT OR IGNORE INTO nutrient(id,units,tagname,name,
+                                            num_decimal_places,sr_order) VALUES (?, ?, ?, ?, ?, ?) '''
+        with open('NUTR_DEF.txt', 'r') as fr:
+            for line in fr.readlines():
+                line = line.replace('\n', '').replace(' ', '').split('^')
+                a, b, c, d, e, f= line
+                a = int(a) if isint(a) else int(0)
+                g = int(g) if isint(g) else int()
+                conn.execute(sql_insert, (int(a), b, c, d, e, int(f)))
         conn.commit()
 
     else:
@@ -158,7 +258,7 @@ def about(page):
     food_items = c.execute('SELECT f.id,f.short_desc, f.long_desc,f.manufac_name, f.sci_name,fg.name AS fgname FROM food f '
                            'INNER JOIN food_group fg ON '
                            'f.food_group_id = fg.id LIMIT ?, ?', (page, every_page)).fetchall()
-    food_goups_items = c.execute('SELECT * FROM food_group')
+    food_goups_items = c.execute('SELECT * FROM food_group').fetchall()
 
     return render_template("about.html", all_food=food_items, food_groups=food_goups_items, prev_page=prev_page,
                            next_page=next_page, current_page=current_page)
@@ -185,6 +285,21 @@ def update():
         get_db().commit()
         flash("Food Updated Successfully")
         return redirect(url_for('about', page=current_page))
+
+# show food's nutritions info
+@app.route('/showNutrients/<int:id>-<int:current_page>', methods=['GET'])
+def shownutrients(id, current_page):
+    c = get_db().cursor()
+    food_nutrients = c.execute('SELECT nu.name, n.amount, n.num_data_points, n.derivation_code, n.min, n.degrees_freedom FROM nutrition n INNER JOIN nutrient nu ON '
+                            'n.nutrient_id = nu.id WHERE n.food_id = ?', [id]).fetchall()
+    return render_template("shownutrition.html", food_nutrients=food_nutrients, current_page=current_page)
+
+# show food's weights info
+@app.route('/showFoodWeights/<int:id>-<int:current_page>', methods=['GET'])
+def showfoodweights(id, current_page):
+    c = get_db().cursor()
+    food_weights = c.execute('SELECT * FROM weight WHERE weight.food_id = ?', [id]).fetchall()
+    return render_template("showweight.html", food_weights=food_weights, current_page=current_page)
 
 
 if __name__ == "__main__":

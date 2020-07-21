@@ -32,6 +32,8 @@
                      {% endwith %}
                      <table class="table table-hover table-striped">
                        <tr>
+                           <th>Nutrients</th>
+                           <th>Weights</th>
                            <th>ID</th>
                            <th>Short Description</th>
                            <th>Long Description</th>
@@ -41,6 +43,12 @@
                        </tr>
                       {% for id,short_desc,long_desc,manufac_name,sci_name, fgname in all_food %}
                        <tr>
+                           <td>
+                               <a onclick="window.location.href='{{ url_for('shownutrients', id=id, current_page=current_page) }}'" class="btn btn-info btn-xs" >Nutirent Info</a>
+                           </td>
+                            <td>
+                               <a onclick="window.location.href='{{ url_for('showfoodweights', id=id, current_page=current_page) }}'" class="btn btn-primary btn-xs" >Weight Info</a>
+                           </td>
                            <td>{{ id }}</td>
                            <td>{{ short_desc }}</td>
                            <td>{{ long_desc }}</td>
@@ -98,6 +106,8 @@
                            </div>
                            </div>
                           </div>
+
+
 
                          {% endfor %}
                      </table>

@@ -1,0 +1,34 @@
+
+      {% extends "template.html" %}
+      {% block content %}
+      <div class="container">
+          <div class="row">
+              <div class="col md-12">
+                  <div class="jumbotron p-3">
+                  <h2>Nutrition Informations <button type="button"  class="btn btn-success float-right"
+                    onclick="window.location.href='{{ url_for('about', page=current_page) }}'">Back to Food</button> </h2>
+                     <table class="table table-hover table-striped">
+                      <tr>
+                          <th>name</th>
+                          <th>amount</th>
+                          <th>num_data_points</th>
+                          <th>derivation_code</th>
+                          <th>min</th>
+                          <th>degrees_freedom</th>
+                               </tr>
+                              {% for name, amount, num_data_points, derivation_code, min, degrees_freedom in food_nutrients %}
+                         <td>{{name}}</td>
+                         <td>{{amount}}</td>
+                         <td>{{num_data_points }}</td>
+                         <td>{{derivation_code}}</td>
+                         <td>{{min}}</td>
+                         <td>{{degrees_freedom}}</td>
+                                </tr>
+                                 {% endfor %}
+                     </table>
+                  </div>
+              </div>
+          </div>
+      </div>
+      {% endblock %}
+
